@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback | Hospital Management</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            transition: background 0.3s;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            width: 80%;
+            max-width: 1000px;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            text-align: center;
+            transition: 0.3s ease-in-out;
+        }
+
+        .dark-mode {
+            background-color: #2C3E50;
+            color: white;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: 0.3s ease-in-out;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #2C3E50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(44, 62, 80, 0.5);
+        }
+
+        .char-counter {
+            font-size: 12px;
+            color: gray;
+            text-align: right;
+        }
+
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .star {
+            font-size: 24px;
+            cursor: pointer;
+            color: #ccc;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .star:hover, .star.selected {
+            color: gold;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2C3E50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #34495E;
+        }
+
+        /* Feedback List */
+        .feedback-list {
+            text-align: left;
+            overflow-y: auto;
+            max-height: 300px;
+            padding-right: 10px;
+        }
+
+        .feedback-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: 0.3s ease-in-out;
+        }
+
+        .feedback-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .feedback-name {
+            font-weight: bold;
+        }
+
+        .feedback-stars {
+            color: gold;
+        }
+
+        /* Dark Mode Button */
+        .toggle-dark {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #2C3E50;
+            transition: color 0.3s;
+        }
+
+        .dark-mode .toggle-dark {
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dark Mode Toggle -->
+    <i class="fas fa-moon toggle-dark" onclick="toggleDarkMode()"></i>
+
+    <div class="container">
+        <!-- Feedback Form (Left) -->
+        <div class="box">
+            <h2>Hospital & Website Feedback</h2>
+            <input type="text" id="name" placeholder="Your Name">
+            <input type="email" id="email" placeholder="Your Email">
+            <textarea id="message" rows="4" placeholder="Your Feedback" oninput="updateCharCount()"></textarea>
+            <div class="char-counter" id="charCounter">0 / 200</div>
+
+            <div class="stars">
+                <span class="star" onclick="setRating(1)">&#9733;</span>
+                <span class="star" onclick="setRating(2)">&#9733;</span>
+                <span class="star" onclick="setRating(3)">&#9733;</span>
+                <span class="star" onclick="setRating(4)">&#9733;</span>
+                <span class="star" onclick="setRating(5)">&#9733;</span>
+            </div>
+
+            <button onclick="submitFeedback()">Submit Feedback</button>
+        </div>
+
+        <!-- Feedback List (Right) -->
+        <div class="box feedback-list">
+            <h2>Recent Feedback</h2>
+            <div id="feedbackContainer">No feedback yet.</div>
+        </div>
+    </div>
+
+    <script>
+        let rating = 0;
+
+        function setRating(value) {
+            rating = value;
+            let stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                star.classList.toggle('selected', index < value);
+            });
+        }
+
+        function updateCharCount() {
+            let message = document.getElementById('message').value;
+            document.getElementById('charCounter').innerText = message.length + " / 200";
+            if (message.length > 200) {
+                alert("Character limit exceeded!");
+                document.getElementById('message').value = message.substring(0, 200);
+            }
+        }
+
+        function submitFeedback() {
+            let name = document.getElementById('name').value;
+            let email = document.getElementById('email').value;
+            let message = document.getElementById('message').value;
+
+            if (!name || !email || !message) {
+                alert("Please fill out all fields!");
+                return;
+            }
+
+            if (rating === 0) {
+                alert("Please give a star rating!");
+                return;
+            }
+
+            let feedback = {
+                name,
+                email,
+                message,
+                rating,
+                date: new Date().toLocaleString()
+            };
+
+            saveFeedback(feedback);
+            displayFeedback();
+            clearForm();
+            alert(`Thank you, ${name}! Your feedback has been submitted.`);
+        }
+
+        function saveFeedback(feedback) {
+            let feedbackList = JSON.parse(localStorage.getItem('feedbackList')) || [];
+            feedbackList.unshift(feedback);
+            localStorage.setItem('feedbackList', JSON.stringify(feedbackList));
+        }
+
+        function displayFeedback() {
+            let feedbackList = JSON.parse(localStorage.getItem('feedbackList')) || [];
+            let container = document.getElementById('feedbackContainer');
+            container.innerHTML = feedbackList.length ? feedbackList.map(f => `
+                <div class="feedback-item">
+                    <div class="feedback-name">${f.name} - <span class="feedback-stars">${'★'.repeat(f.rating)}</span></div>
+                    <div>${f.message}</div>
+                    <div style="font-size: 12px; color: gray;">${f.date}</div>
+                </div>
+            `).join('') : "No feedback yet.";
+        }
+
+        function clearForm() {
+            document.getElementById('name').value = "";
+            document.getElementById('email').value = "";
+            document.getElementById('message').value = "";
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+
+        window.onload = displayFeedback;
+    </script>
+
+</body>
+</html>
